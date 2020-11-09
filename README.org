@@ -1,0 +1,23 @@
+
+
+* TXL – High-quality machine translation in Emacs via DeepL’s REST API
+TXL provides machine translation through DeepL's REST API.
+
+** Installation
+TXL is in early stages and not yet available on MELPA or similar repositories.  The code must therefore be downloaded and installed manually.
+
+Minimally the user needs to specify a pair of languages in the customization variable ~txl-languages~ and an authentication key for DeepL's REST API via ~txl-deepl-api-url~.  Example:
+
+#+BEGIN_SRC elisp
+(require 'txl)
+(setq txl-languages '("DE" . "EN-US"))
+(setq txl-deepl-api-key "my-api-key")
+#+END_SRC
+
+Other configuration variables are ~txl-deelp-split-sentences~, ~txl-deepl-preserve-formatting~, and ~txl-deepl-formality~.  See inline documentation for details.
+
+** Usage
+Then the function ~txl-translate-to-other-language~ translates the current paragraph or the marked region to the respective other language.  (The current language is detected using the ~guess-language~ package.)  The function ~txl-translate-roundtrip~ translates to the other language and back, which can yield alternative, sometimes more idiomatic formulations.  Both of these functions display the translation in the mini-buffer.  Alternatively the functions ~txl-replace-with-other-language~ and ~txl-replace-with-roundtrip~ can be used to replace the paragraph or marked region with the translation.
+
+** Future versions
+Many useful extensions are conceivable.  For instance, support for more than two languages and support for other translation backends.  Ideas and PRs are welcome.
