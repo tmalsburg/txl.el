@@ -11,7 +11,7 @@ Dependencies are:
 - [[https://github.com/tkf/emacs-request][request.el]] (available on [[https://melpa.org/#/request][MELPA]])
 
 ** Configuration
-Minimally the user needs to specify a pair of languages in the customization variable ~txl-languages~ and an authentication key for DeepL's REST API via ~txl-deepl-api-url~.  Example:
+Minimally the user needs to specify a pair of languages in the customization variable ~txl-languages~ and an authentication key for DeepL's REST API via ~txl-deepl-api-url~.  (You’ll need the “developer” subscription.)  Example:
 
 #+BEGIN_SRC elisp
 (require 'txl)
