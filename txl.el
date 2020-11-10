@@ -31,7 +31,7 @@
 ;; `guess-language'.)  The function `txl-translate-roundtrip'
 ;; translate to the other language and back, which can yield
 ;; alternative, sometimes more idiomatic formulations.  Both of these
-;; functions display the translation in the mini-buffer.
+;; functions display the translation in the minibuffer.
 ;; Alternatively the functions `txl-replace-with-other-language' and
 ;; `txl-replace-with-roundtrip' can be used to replace the paragraph
 ;; or marked region with the translation.  Future versions may support
@@ -82,27 +82,26 @@
            (const :tag "Chinese" "ZH"))))
 
 (defcustom txl-deepl-split-sentences "nonewlines"
-  "Sets whether the translation engine should first split the
-input into sentences."
+  "Whether the translation engine splits input into sentences which are translated individually."
   :type '(choice (const :tag "No splitting" "0")
                  (const :tag "Split on interpunction and on newlines" "1")
                  (const :tag "Split on interpunction only, ignoring newlines " "nonewlines")))
 
 (defcustom txl-deepl-preserve-formatting "1"
-  "Sets whether the translation engine should respect the
-original formatting, even if it would usually correct some
-aspects.  The formatting aspects affected by this setting
-include: Punctuation at the beginning and end of the sentence.
+  "Whether the translation engine should respect the original formatting.
+
+The formatting aspects affected by this setting include:
+Punctuation at the beginning and end of the sentence.
 Upper/lower case at the beginning of the sentence."
   :type '(choice (const :tag "No" "0")
                  (const :tag "Yes" "1")))
 
 (defcustom txl-deepl-formality "default"
-  "Sets whether the translated text should lean towards formal or
-informal language. This feature currently works for all target
-languages except EN (English), EN-GB (British English),
-EN-US (American English), ES (Spanish), JA (Japanese) and
-ZH (Chinese)."
+  "Whether the translated text should lean towards formal or informal language.
+
+This feature currently works for all target languages except
+EN (English), EN-GB (British English), EN-US (American English),
+ES (Spanish), JA (Japanese) and ZH (Chinese)."
   :type '(choice (const :tag "Default" "default")
                  (const :tag "More formal language" "more")
                  (const :tag "Less formal language" "less")))
@@ -112,6 +111,12 @@ ZH (Chinese)."
   :type 'string)
 
 (defun txl-translate-string (text target-lang &rest more-target-langs)
+  "Translate TEXT to TARGET-LANG.
+
+If MORE-TARGET-LANGS is non-nil, the translation in TARGET-LANG
+will then be translated to the first language in
+MORE-TARGET-LANGS and the result of that to the second and so
+on."
   (message "Retrieving translation from DeepL ... (target language %s)" target-lang)
   (let* ((request-backend 'url-retrieve)
          (response (request
@@ -134,22 +139,29 @@ ZH (Chinese)."
          (if more-target-langs
              (apply 'txl-translate-string translation (car more-target-langs) (cdr more-target-langs))
            translation)))
-      (400 (error "Bad request.  Please check error message and your parameters."))
-      (403 (error "Authorization failed.  Please supply a valid auth_key parameter."))
-      (404 (error "The requested resource could not be found."))
-      (413 (error "The request size exceeds the limit."))
-      (429 (error "Too many requests.  Please wait and resend your request."))
-      (456 (error "Quota exceeded.  The character limit has been reached."))
-      (503 (error "Resource currently unavailable.  Try again later."))
+      (400 (error "Bad request.  Please check error message and your parameters"))
+      (403 (error "Authorization failed.  Please supply a valid auth_key parameter"))
+      (404 (error "The requested resource could not be found"))
+      (413 (error "The request size exceeds the limit"))
+      (429 (error "Too many requests.  Please wait and resend your request"))
+      (456 (error "Quota exceeded.  The character limit has been reached"))
+      (503 (error "Resource currently unavailable.  Try again later"))
       (_   (error "Internal error")))))
 
 (defun txl-translate (target-lang &rest more-target-langs)
+  "Translate the region or paragraph to TARGET-LANG.
+
+If MORE-TARGET-LANGS is non-nil, the translation in TARGET-LANG
+will then be translated to the first language in
+MORE-TARGET-LANGS and the result of that to the second and so
+on."
   (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
          (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point))))
          (text (buffer-substring-no-properties beginning end)))
     (apply 'txl-translate-string text target-lang more-target-langs)))
 
 (defun txl-guess-language ()
+  "Guess the language of the region or paragraph."
   (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
          (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point))))
          (language  (upcase (symbol-name (guess-language-region beginning end)))))
@@ -158,33 +170,43 @@ ZH (Chinese)."
       (cdr txl-languages))))
 
 (defun txl-replace-with-string (string)
+  "Replace region or paragraph with STRING."
   (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
          (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point)))))
     (delete-region beginning end)
     (insert string)))
 
 (defun txl-other-language ()
+  "Return the other language of the region or paragraph.
+
+The other language is the one language specified in
+`txl-languages' in which the region or paragraph is *not*
+written, i.e. the target language of a translation."
   (if (string= (txl-guess-language) (car txl-languages))
       (cdr txl-languages)
     (car txl-languages)))
 
 (defun txl-translate-to-other-language ()
+  "Translate the region or paragraph to other language and display the result in the minibuffer."
   (interactive)
   (message "%s" (txl-translate (txl-other-language))))
 
 (defun txl-translate-roundtrip ()
+  "Translate the region or paragraph to other language and back, and display the result in the minibuffer."
   (interactive)
   (let* ((route (list (txl-other-language) (txl-guess-language)))
          (translation (apply 'txl-translate route)))
   (message "%s" translation)))
 
 (defun txl-replace-with-other-language ()
+  "Translate region or paragraph to other language, and replace original text with translation."
   (interactive)
   (let* ((source-lang (txl-guess-language))
          (translation (txl-translate (txl-other-language))))
     (txl-replace-with-string translation)))
 
 (defun txl-replace-with-roundtrip ()
+  "Translate region or paragraph to other language and back, and replace original text with translation."
   (interactive)
   (let* ((source-lang (txl-guess-language))
          (route (list (txl-other-language) (txl-guess-language)))
@@ -192,3 +214,5 @@ ZH (Chinese)."
     (txl-replace-with-string translation)))
 
 (provide 'txl)
+
+;;; txl.el ends here
