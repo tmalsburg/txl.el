@@ -113,10 +113,10 @@ ES (Spanish), JA (Japanese) and ZH (Chinese)."
 (defun txl-translate-string (text target-lang &rest more-target-langs)
   "Translate TEXT to TARGET-LANG.
 
-If MORE-TARGET-LANGS is non-nil, the translation in TARGET-LANG
-will then be translated to the first language in
-MORE-TARGET-LANGS and the result of that to the second and so
-on."
+If MORE-TARGET-LANGS is non-nil, translation will be applied
+recursively for all languages in MORE-TARGET-LANGS.  This allows,
+for example, to translate to another language and back in one
+go."
   (message "Retrieving translation from DeepL ... (target language %s)" target-lang)
   (let* ((request-backend 'url-retrieve)
          (response (request
@@ -151,10 +151,10 @@ on."
 (defun txl-translate (target-lang &rest more-target-langs)
   "Translate the region or paragraph to TARGET-LANG.
 
-If MORE-TARGET-LANGS is non-nil, the translation in TARGET-LANG
-will then be translated to the first language in
-MORE-TARGET-LANGS and the result of that to the second and so
-on."
+If MORE-TARGET-LANGS is non-nil, translation will be applied
+recursively for all languages in MORE-TARGET-LANGS.  This allows,
+for example, to translate to another language and back in one
+go."
   (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
          (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point))))
          (text (buffer-substring-no-properties beginning end)))
