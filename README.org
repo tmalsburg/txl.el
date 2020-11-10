@@ -33,5 +33,5 @@ For convenience the translation commands can be bound to keyboard shortcuts.  Ex
 ** Usage
 The command ~txl-translate-to-other-language~ translates the marked region or paragraph to the respective other language.  (The current language is detected using the ~guess-language~ package.)  The command ~txl-translate-roundtrip~ translates to the other language and back, which can yield alternative, sometimes more idiomatic formulations.  Both of these commands display the translation in the mini-buffer.  Alternatively the commands ~txl-replace-with-other-language~ and ~txl-replace-with-roundtrip~ can be used to replace the paragraph or marked region with the translation.
 
-** Future versions
+** Future development
 Many useful extensions are conceivable.  For instance, support for more than two languages and support for other translation backends.  Ideas and PRs are welcome.
