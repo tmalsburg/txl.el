@@ -1,17 +1,16 @@
 
-
 * TXL – High-quality machine translation in Emacs via DeepL’s REST API
-TXL provides machine translation through DeepL's REST API.
+TXL provides machine translation through DeepL's REST API.  Note that this package is in early stages and the user interface may change.
 
 ** Installation
-TXL is in an early stage and therefore not yet available on MELPA or similar repositories.  The file [[https://github.com/tmalsburg/txl.el/blob/master/txl.el][txl.el]] must be downloaded and installed manually in a directory where Emacs will find it.
+TXL is not yet available on MELPA or similar repositories.  The file [[https://github.com/tmalsburg/txl.el/blob/master/txl.el][txl.el]] must therefore be downloaded and installed manually in a directory where Emacs will find it.
 
 Dependencies are:
 - [[https://github.com/tmalsburg/guess-language.el][guess-language.el]] (available on [[http://elpa.gnu.org/packages/guess-language.html][ELPA]])
 - [[https://github.com/tkf/emacs-request][request.el]] (available on [[https://melpa.org/#/request][MELPA]])
 
 ** Configuration
-Minimally the user needs to specify a pair of languages in the customization variable ~txl-languages~ and an authentication key for DeepL's REST API via ~txl-deepl-api-url~.  (You’ll need the [[https://www.deepl.com/pro?cta=menu-plans/][“developer” subscription]].)  Example:
+Minimally the user needs to specify a pair of languages in the customization variable ~txl-languages~ and an authentication key for DeepL's REST API via ~txl-deepl-api-url~.  (You need the [[https://www.deepl.com/pro?cta=menu-plans/][“developer” subscription]].)  Example:
 
 #+BEGIN_SRC elisp
 (require 'txl)
@@ -21,17 +20,13 @@ Minimally the user needs to specify a pair of languages in the customization var
 
 Other configuration variables are ~txl-deelp-split-sentences~, ~txl-deepl-preserve-formatting~, and ~txl-deepl-formality~.  See inline documentation for details.
 
-For convenience the translation commands can be bound to keyboard shortcuts.  Example:
+For convenience the translation command can be bound to a keyboard shortcut.  Example:
 
 #+BEGIN_SRC elisp
-(global-set-key (kbd "C-x t")   'txl-translate-to-other-language)
-(global-set-key (kbd "C-x C-t") 'txl-translate-roundtrip)
-(global-set-key (kbd "C-x z")   'txl-replace-with-other-language)
-(global-set-key (kbd "C-x C-z") 'txl-replace-with-roundtrip)
+(global-set-key (kbd "C-x t")   'txl-translate-region-or-paragraph)
 #+END_SRC
 
 ** Usage
-The command ~txl-translate-to-other-language~ translates the marked region or paragraph to the respective other language.  (The current language is detected using the ~guess-language~ package.)  The command ~txl-translate-roundtrip~ translates to the other language and back, which can yield alternative, sometimes more idiomatic formulations.  Both of these commands display the translation in the mini-buffer.  Alternatively the commands ~txl-replace-with-other-language~ and ~txl-replace-with-roundtrip~ can be used to replace the paragraph or marked region with the translation.
+The command ~txl-translate-region-or-paragraph~ translates the marked region or, if no region is active, the paragraph to the respective other language.  The current language is detected using the ~guess-language~ package.  The retrieved translation is shown in a separate buffer where it can be reviewed and edited.  The original text can be replaced with the (edited) translation via ~C-c C-c~.  The translation can be dismissed (without touching the original text) using ~C-c C-k~.  If a prefix argument is given (~C-u~), the text will be translated round-trip to the other language and back.  
 
-** Future development
-Many useful extensions are conceivable.  For instance, support for more than two languages and support for other translation backends.  Ideas and PRs are welcome.
+

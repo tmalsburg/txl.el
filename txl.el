@@ -42,12 +42,19 @@
 (require 'request)
 (require 'guess-language)
 
-(defgroup txl nil
-  "Use online machine translation services."
-  :group 'text)
+(defconst txl-translation-buffer-name "*TXL translation result*"
+  "Name of the buffer used for reviewing and editing proposed
+  translations.")
+
+(defvar txl-source-buffer nil
+  "Buffer for which a translation was requested.")
 
 (defvar txl-deepl-api-url "https://api.deepl.com/v2/translate"
   "URL of the translation API.")
+
+(defgroup txl nil
+  "Use online machine translation services."
+  :group 'text)
 
 (defcustom txl-languages '("DE" . "EN-US")
   "The two languages between which DeepL will translate."
@@ -149,7 +156,7 @@ go."
       (_   (error "Internal error")))))
 
 (defun txl-translate (target-lang &rest more-target-langs)
-  "Translate the region or paragraph to TARGET-LANG.
+  "Translate the region or paragraph to TARGET-LANG and return translation as string.
 
 If MORE-TARGET-LANGS is non-nil, translation will be applied
 recursively for all languages in MORE-TARGET-LANGS.  This allows,
@@ -169,15 +176,8 @@ go."
         (car txl-languages)
       (cdr txl-languages))))
 
-(defun txl-replace-with-string (string)
-  "Replace region or paragraph with STRING."
-  (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
-         (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point)))))
-    (delete-region beginning end)
-    (insert string)))
-
 (defun txl-other-language ()
-  "Return the other language of the region or paragraph.
+  "Return the respective other language of the region or paragraph.
 
 The other language is the one language specified in
 `txl-languages' in which the region or paragraph is *not*
@@ -186,32 +186,68 @@ written, i.e. the target language of a translation."
       (cdr txl-languages)
     (car txl-languages)))
 
-(defun txl-translate-to-other-language ()
-  "Translate the region or paragraph to other language and display the result in the minibuffer."
-  (interactive)
-  (message "%s" (txl-translate (txl-other-language))))
+(defun txl-replace-with-string (string)
+  "Replace region or paragraph with STRING."
+  (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
+         (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point)))))
+    (delete-region beginning end)
+    (insert string)))
 
-(defun txl-translate-roundtrip ()
-  "Translate the region or paragraph to other language and back, and display the result in the minibuffer."
-  (interactive)
-  (let* ((route (list (txl-other-language) (txl-guess-language)))
+;;;###autoload
+(defun txl-translate-region-or-paragraph (&optional prefix-arg)
+  "Translate the region or paragraph and display result in a separate buffer.
+
+By default the text is translated to the other language specified
+in `txl-languages'.  If PREFIX-ARG is non-nil, the text is
+translated to the other language and back.
+
+The translation is displayed in a separate buffer.  There it can
+be edited there and, if desired, the original text can be
+replaced with the (edited) translation using C-c C-c.  The
+translation can be dismissed via C-c C-k."
+  (interactive "P")
+  (setq txl-source-buffer (current-buffer))
+  (let* ((route (if prefix-arg
+                    (list (txl-other-language) (txl-guess-language))
+                  (list (txl-other-language))))
          (translation (apply 'txl-translate route)))
-  (message "%s" translation)))
+    (with-current-buffer (get-buffer-create txl-translation-buffer-name)
+      (unless (derived-mode-p 'text-mode)
+        (text-mode))
+      (erase-buffer)
+      (insert translation)
+      (txl-edit-translation-mode)))
+  (display-buffer txl-translation-buffer-name))
 
-(defun txl-replace-with-other-language ()
-  "Translate region or paragraph to other language, and replace original text with translation."
+(defun txl-accept-translation ()
+  "Hide buffer for reviewing and editing, replace original text with translation."
   (interactive)
-  (let* ((source-lang (txl-guess-language))
-         (translation (txl-translate (txl-other-language))))
-    (txl-replace-with-string translation)))
+  (let ((translation (buffer-string)))
+    (txl-dismiss-translation)
+    (with-current-buffer txl-source-buffer
+      (txl-replace-with-string translation))))
 
-(defun txl-replace-with-roundtrip ()
-  "Translate region or paragraph to other language and back, and replace original text with translation."
+(defun txl-dismiss-translation ()
+  "Hide buffer for reviewing and editing translation."
   (interactive)
-  (let* ((source-lang (txl-guess-language))
-         (route (list (txl-other-language) (txl-guess-language)))
-         (translation (apply 'txl-translate route)))
-    (txl-replace-with-string translation)))
+  (setq-local header-line-format nil)
+  (replace-buffer-in-windows))
+
+(define-minor-mode txl-edit-translation-mode
+  "Minor mode for reviewing and editing translations."
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-c C-c") 'txl-accept-translation)
+            (define-key map (kbd "C-c C-k") 'txl-dismiss-translation)
+            map)
+  (setq-local
+   header-line-format
+   (substitute-command-keys
+    " Accept translation \\[txl-accept-translation], dismiss translation \\[txl-dismiss-translation]")))
+
+;; Define global minor mode.  This is needed to the toggle minor mode.
+;;;###autoload
+(define-globalized-minor-mode txl-edit-translation-global-mode
+  txl-edit-translation-mode txl-edit-translation-mode)
 
 (provide 'txl)
 
