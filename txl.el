@@ -48,6 +48,11 @@
 (defvar txl-source-buffer nil
   "Buffer for which a translation was requested.")
 
+(defvar txl-original-window-configuration nil
+  "Window configuration when a translation was requested.
+
+Will be restored when the buffer for reviewing the translation is closed.")
+
 (defvar txl-deepl-api-url "https://api.deepl.com/v2/translate"
   "URL of the translation API.")
 
@@ -209,6 +214,7 @@ replaced with the (edited) translation using C-c C-c.  The
 translation can be dismissed via C-c C-k."
   (interactive "P")
   (setq txl-source-buffer (current-buffer))
+  (setq txl-original-window-configuration (current-window-configuration))
   (let* ((route (if prefix-arg
                     (list (txl-other-language) (txl-guess-language))
                   (list (txl-other-language))))
@@ -233,7 +239,7 @@ translation can be dismissed via C-c C-k."
   "Hide buffer for reviewing and editing translation."
   (interactive)
   (setq-local header-line-format nil)
-  (replace-buffer-in-windows))
+  (set-window-configuration txl-original-window-configuration))
 
 (define-minor-mode txl-edit-translation-mode
   "Minor mode for reviewing and editing translations."
