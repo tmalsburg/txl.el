@@ -224,8 +224,12 @@ translation can be dismissed via C-c C-k."
         (text-mode))
       (erase-buffer)
       (insert translation)
-      (txl-edit-translation-mode)))
-  (display-buffer txl-translation-buffer-name))
+      (txl-edit-translation-mode)
+      (goto-char (point-min))))
+  (display-buffer txl-translation-buffer-name
+                  '((display-buffer-below-selected display-buffer-at-bottom)
+                    (inhibit-same-window . t)
+                    (window-height . fit-window-to-buffer))))
 
 (defun txl-accept-translation ()
   "Hide buffer for reviewing and editing, replace original text with translation."
