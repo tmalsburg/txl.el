@@ -43,8 +43,7 @@
 (require 'guess-language)
 
 (defconst txl-translation-buffer-name "*TXL translation result*"
-  "Name of the buffer used for reviewing and editing proposed
-  translations.")
+  "Name of the buffer used for reviewing and editing proposed translations.")
 
 (defvar txl-source-buffer nil
   "Buffer for which a translation was requested.")
@@ -56,62 +55,62 @@
   "Use online machine translation services."
   :group 'text)
 
-(defcustom txl-languages '("DE" . "EN-US")
+(defcustom txl-languages '(DE . EN-US)
   "The two languages between which DeepL will translate."
   :type '(cons
           (choice
-           (const :tag "German" "DE")
-           (const :tag "British English" "EN-GB")
-           (const :tag "American English" "EN-US")
-           (const :tag "French" "FR")
-           (const :tag "Italian" "IT")
-           (const :tag "Japanese" "JA")
-           (const :tag "Spanish" "ES")
-           (const :tag "Dutch" "NL")
-           (const :tag "Polish" "PL")
-           (const :tag "Portuguese, all Portuguese varieties excluding Brazilian Portuguese" "PT-PT")
-           (const :tag "Brazilian Portuguese" "PT-BR")
-           (const :tag "Russian" "RU")
-           (const :tag "Chinese" "ZH"))
+           (const :tag "German" DE)
+           (const :tag "British English" EN-GB)
+           (const :tag "American English" EN-US)
+           (const :tag "French" FR)
+           (const :tag "Italian" IT)
+           (const :tag "Japanese" JA)
+           (const :tag "Spanish" ES)
+           (const :tag "Dutch" NL)
+           (const :tag "Polish" PL)
+           (const :tag "Portuguese, all Portuguese varieties excluding Brazilian Portuguese" PT-PT)
+           (const :tag "Brazilian Portuguese" PT-BR)
+           (const :tag "Russian" RU)
+           (const :tag "Chinese" ZH))
           (choice
-           (const :tag "German" "DE")
-           (const :tag "British English" "EN-GB")
-           (const :tag "American English" "EN-US")
-           (const :tag "French" "FR")
-           (const :tag "Italian" "IT")
-           (const :tag "Japanese" "JA")
-           (const :tag "Spanish" "ES")
-           (const :tag "Dutch" "NL")
-           (const :tag "Polish" "PL")
-           (const :tag "Portuguese, all Portuguese varieties excluding Brazilian Portuguese" "PT-PT")
-           (const :tag "Brazilian Portuguese" "PT-BR")
-           (const :tag "Russian" "RU")
-           (const :tag "Chinese" "ZH"))))
+           (const :tag "German" DE)
+           (const :tag "British English" EN-GB)
+           (const :tag "American English" EN-US)
+           (const :tag "French" FR)
+           (const :tag "Italian" IT)
+           (const :tag "Japanese" JA)
+           (const :tag "Spanish" ES)
+           (const :tag "Dutch" NL)
+           (const :tag "Polish" PL)
+           (const :tag "Portuguese, all Portuguese varieties excluding Brazilian Portuguese" PT-PT)
+           (const :tag "Brazilian Portuguese" PT-BR)
+           (const :tag "Russian" RU)
+           (const :tag "Chinese" ZH))))
 
-(defcustom txl-deepl-split-sentences "nonewlines"
+(defcustom txl-deepl-split-sentences 'nonewlines
   "Whether the translation engine splits input into sentences which are translated individually."
-  :type '(choice (const :tag "No splitting" "0")
-                 (const :tag "Split on interpunction and on newlines" "1")
-                 (const :tag "Split on interpunction only, ignoring newlines " "nonewlines")))
+  :type '(choice (const :tag "No splitting" nil)
+                 (const :tag "Split on interpunction and on newlines" t)
+                 (const :tag "Split on interpunction only, ignoring newlines " 'nonewlines)))
 
-(defcustom txl-deepl-preserve-formatting "1"
+(defcustom txl-deepl-preserve-formatting t
   "Whether the translation engine should respect the original formatting.
 
 The formatting aspects affected by this setting include:
 Punctuation at the beginning and end of the sentence.
 Upper/lower case at the beginning of the sentence."
-  :type '(choice (const :tag "No" "0")
-                 (const :tag "Yes" "1")))
+  :type '(choice (const :tag "No" nil)
+                 (const :tag "Yes" t)))
 
-(defcustom txl-deepl-formality "default"
+(defcustom txl-deepl-formality 'default
   "Whether the translated text should lean towards formal or informal language.
 
 This feature currently works for all target languages except
 EN (English), EN-GB (British English), EN-US (American English),
 ES (Spanish), JA (Japanese) and ZH (Chinese)."
-  :type '(choice (const :tag "Default" "default")
-                 (const :tag "More formal language" "more")
-                 (const :tag "Less formal language" "less")))
+  :type '(choice (const :tag "Default" 'default)
+                 (const :tag "More formal language" 'more)
+                 (const :tag "Less formal language" 'less)))
 
 (defcustom txl-deepl-api-key ""
   "The authentication key used to access the translation API."
@@ -124,7 +123,7 @@ If MORE-TARGET-LANGS is non-nil, translation will be applied
 recursively for all languages in MORE-TARGET-LANGS.  This allows,
 for example, to translate to another language and back in one
 go."
-  (message "Retrieving translation from DeepL ... (target language %s)" target-lang)
+  (message "Requesting translation from %s to %s ... " (if (eq target-lang (car txl-languages)) (cdr txl-languages) (car txl-languages)) target-lang)
   (let* ((request-backend 'url-retrieve)
          (response (request
                      txl-deepl-api-url
@@ -132,9 +131,12 @@ go."
                      :sync t
                      :parser 'json-read
                      :data `(("auth_key"            . ,txl-deepl-api-key)
-                             ("split_sentences"     . ,txl-deepl-split-sentences)
-                             ("preserve_formatting" . ,txl-deepl-preserve-formatting)
-                             ("formality"           . ,txl-deepl-formality)
+                             ("split_sentences"     . ,(pcase txl-deepl-split-sentences
+                                                         ((pred not) "0")
+                                                         ('nonewlines "nonewlines")
+                                                         ((pred (lambda (x) (eq t x))) "1")))
+                             ("preserve_formatting" . ,(if txl-deepl-preserve-formatting "1" "0"))
+                             ("formality"           . ,(symbol-name txl-deepl-formality))
                              ("text"                . ,text)
                              ("target_lang"         . ,target-lang)))))
     (pcase (request-response-status-code response)
@@ -172,7 +174,7 @@ go."
   (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
          (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point))))
          (language  (upcase (symbol-name (guess-language-region beginning end)))))
-    (if (string-prefix-p language (car txl-languages))
+    (if (string-prefix-p language (symbol-name (car txl-languages)))
         (car txl-languages)
       (cdr txl-languages))))
 
@@ -182,7 +184,7 @@ go."
 The other language is the one language specified in
 `txl-languages' in which the region or paragraph is *not*
 written, i.e. the target language of a translation."
-  (if (string= (txl-guess-language) (car txl-languages))
+  (if (eq (txl-guess-language) (car txl-languages))
       (cdr txl-languages)
     (car txl-languages)))
 
