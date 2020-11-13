@@ -14,7 +14,7 @@ Minimally the user needs to specify a pair of languages in the customization var
 
 #+BEGIN_SRC elisp
 (require 'txl)
-(setq txl-languages '("DE" . "EN-US"))
+(setq txl-languages '(DE . EN-US))
 (setq txl-deepl-api-key "my-api-key")
 #+END_SRC
 
