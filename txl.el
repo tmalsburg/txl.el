@@ -2,7 +2,7 @@
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Package-Requires: ((request "0.3.2") (guess-language "0.0.1") (emacs "28"))
 ;; URL: https://github.com/tmalsburg/txl.el
 
