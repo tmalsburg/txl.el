@@ -229,7 +229,8 @@ translation can be dismissed via C-c C-k."
   (display-buffer txl-translation-buffer-name
                   '((display-buffer-below-selected display-buffer-at-bottom)
                     (inhibit-same-window . t)
-                    (window-height . fit-window-to-buffer))))
+                    (window-height . fit-window-to-buffer)))
+  (select-window (get-buffer-window txl-translation-buffer-name)))
 
 (defun txl-accept-translation ()
   "Hide buffer for reviewing and editing, replace original text with translation."
