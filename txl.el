@@ -172,9 +172,9 @@ go."
           (if (org-in-item-p)
               (org-beginning-of-item-list)
             (org-backward-paragraph))
-        (backward-paragraph)
-        (when (looking-at-p "[[:space:]]")
-          (forward-whitespace 1)))
+        (backward-paragraph))
+      (while (looking-at-p "[ \t\n\r]")
+        (forward-char 1))
       (point))))
 
 (defun txl-end ()
@@ -187,7 +187,9 @@ go."
               (org-end-of-item-list)
             (org-forward-paragraph))
         (forward-paragraph))
-      (point))))
+      (while (looking-at-p "[ \t\n\r]")
+        (backward-char 1))
+      (1+ (point)))))
 
 (defun txl-translate (target-lang &rest more-target-langs)
   "Translate the region or paragraph to TARGET-LANG and return translation as string.
