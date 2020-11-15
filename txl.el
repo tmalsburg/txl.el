@@ -162,6 +162,33 @@ go."
       (503 (error "Resource currently unavailable.  Try again later"))
       (_   (error "Internal error")))))
 
+(defun txl-beginning ()
+  "Return beginning of region or, if inactive, paragraph."
+  (if (region-active-p)
+      (region-beginning)
+    (save-excursion
+      (if (derived-mode-p 'org-mode)
+          ;; When in list, go to the beginning of the top-level list:
+          (if (org-in-item-p)
+              (org-beginning-of-item-list)
+            (org-backward-paragraph))
+        (backward-paragraph)
+        (when (looking-at-p "[[:space:]]")
+          (forward-whitespace 1)))
+      (point))))
+
+(defun txl-end ()
+  "Return end of region or, if inactive, paragraph."
+  (if (region-active-p)
+      (region-end)
+    (save-excursion
+      (if (derived-mode-p 'org-mode)
+          (if (org-in-item-p)
+              (org-end-of-item-list)
+            (org-forward-paragraph))
+        (forward-paragraph))
+      (point))))
+
 (defun txl-translate (target-lang &rest more-target-langs)
   "Translate the region or paragraph to TARGET-LANG and return translation as string.
 
@@ -169,16 +196,13 @@ If MORE-TARGET-LANGS is non-nil, translation will be applied
 recursively for all languages in MORE-TARGET-LANGS.  This allows,
 for example, to translate to another language and back in one
 go."
-  (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
-         (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point))))
-         (text (buffer-substring-no-properties beginning end)))
+  (let ((text (buffer-substring-no-properties (txl-beginning) (txl-end))))
     (apply 'txl-translate-string text target-lang more-target-langs)))
 
 (defun txl-guess-language ()
   "Guess the language of the region or paragraph."
-  (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
-         (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point))))
-         (language  (upcase (symbol-name (guess-language-region beginning end)))))
+  (let* ((language (guess-language-region (txl-beginning) (txl-end)))
+         (language (upcase (symbol-name language))))
     (if (string-prefix-p language (symbol-name (car txl-languages)))
         (car txl-languages)
       (cdr txl-languages))))
@@ -193,11 +217,11 @@ written, i.e. the target language of a translation."
       (cdr txl-languages)
     (car txl-languages)))
 
-(defun txl-replace-with-string (string)
+(defun txl-replace-region-or-paragraph (string)
   "Replace region or paragraph with STRING."
-  (let* ((beginning (if (region-active-p) (region-beginning) (save-excursion (guess-language-backward-paragraph) (point))))
-         (end       (if (region-active-p) (region-end)       (save-excursion (guess-language-forward-paragraph) (point)))))
-    (delete-region beginning end)
+  (let ((beginning (txl-beginning)))
+    (delete-region beginning (txl-end))
+    (goto-char (txl-beginning))
     (insert string)))
 
 ;;;###autoload
@@ -238,7 +262,7 @@ translation can be dismissed via C-c C-k."
   (let ((translation (buffer-string)))
     (txl-dismiss-translation)
     (with-current-buffer txl-source-buffer
-      (txl-replace-with-string translation))))
+      (txl-replace-region-or-paragraph translation))))
 
 (defun txl-dismiss-translation ()
   "Hide buffer for reviewing and editing translation."
