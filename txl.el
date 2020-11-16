@@ -222,8 +222,8 @@ written, i.e. the target language of a translation."
 (defun txl-replace-region-or-paragraph (string)
   "Replace region or paragraph with STRING."
   (let ((beginning (txl-beginning)))
-    (delete-region beginning (txl-end))
     (goto-char (txl-beginning))
+    (delete-region beginning (txl-end))
     (insert string)))
 
 ;;;###autoload
