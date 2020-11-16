@@ -189,7 +189,7 @@ go."
         (forward-paragraph))
       (while (looking-at-p "[ \t\n\r]")
         (backward-char 1))
-      (1+ (point)))))
+      (min (point-max) (1+ (point))))))
 
 (defun txl-translate (target-lang &rest more-target-langs)
   "Translate the region or paragraph to TARGET-LANG and return translation as string.
