@@ -2,8 +2,10 @@
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
+;; Description: Provides machine translation via DeepL's REST API
+;; Keywords: wp
 ;; Version: 0.0.2
-;; Package-Requires: ((request "0.3.2") (guess-language "0.0.1") (emacs "28"))
+;; Package-Requires: ((request "0.3.2") (guess-language "0.0.1") (emacs "24.4"))
 ;; URL: https://github.com/tmalsburg/txl.el
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -32,8 +34,8 @@
 ;; the package guess-language.  The retrieved translation is shown in
 ;; a separate buffer where it can be reviewed and edited.  The
 ;; original text can be replaced with the (edited) translation via
-;; <C-c C-c>. The translation can be dismissed (without touching the
-;; original text) using <C-c C-k>. If a prefix argument is given
+;; <C-c C-c>.  The translation can be dismissed (without touching the
+;; original text) using <C-c C-k>.  If a prefix argument is given
 ;; (<C-u>), the text will be translated round-trip to the other
 ;; language and back.
 
