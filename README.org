@@ -25,7 +25,7 @@ Minimally the user needs to specify a pair of languages in the customization var
 (setq txl-deepl-api-key "my-api-key")
 #+END_SRC
 
-Other configuration variables are ~txl-deelp-split-sentences~, ~txl-deepl-preserve-formatting~, and ~txl-deepl-formality~.  See inline documentation for details.
+Other configuration variables are ~txl-deepl-api-url~, ~txl-deelp-split-sentences~, ~txl-deepl-preserve-formatting~, and ~txl-deepl-formality~.  See inline documentation for details.
 
 For convenience the translation command can be bound to a keyboard shortcut.  Example:
 
