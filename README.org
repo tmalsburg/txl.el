@@ -25,6 +25,12 @@ Minimally the user needs to specify a pair of languages in the customization var
 (setq txl-deepl-api-key "my-api-key")
 #+END_SRC
 
+By the default, txl.el assumes that your key is for the DeepL Pro plan.  When the free plan is used instead, a txl.el needs to use a different API URL.  The following definition sets this URL:
+
+#+BEGIN_SRC elisp
+(setq txl-deepl-api-url "https://api-free.deepl.com/v2/translate")
+#+END_SRC
+
 Other configuration variables are ~txl-deelp-split-sentences~, ~txl-deepl-preserve-formatting~, and ~txl-deepl-formality~.  See inline documentation for details.
 
 For convenience the translation command can be bound to a keyboard shortcut.  Example:

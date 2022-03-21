@@ -55,12 +55,14 @@
 
 Will be restored when the buffer for reviewing the translation is closed.")
 
-(defvar txl-deepl-api-url "https://api.deepl.com/v2/translate"
-  "URL of the translation API.")
-
 (defgroup txl nil
   "Use online machine translation services."
   :group 'text)
+
+(defcustom txl-deepl-api-url "https://api.deepl.com/v2/translate"
+  "URL of the translation API.  Depends on which plan is used."
+  :type '(choice (const :tag "DeepL API Pro" "https://api.deepl.com/v2/translate")
+                 (const :tag "DeepL API Free" "https://api-free.deepl.com/v2/translate")))
 
 (defcustom txl-languages '(DE . EN-US)
   "The two languages between which DeepL will translate."
