@@ -196,7 +196,7 @@ go."
       (min (point-max) (1+ (point))))))
 
 (defun txl-translate (target-lang &rest more-target-langs)
-  "Translate the region or paragraph to TARGET-LANG and return translation as string.
+  "Translate region or paragraph to TARGET-LANG and return translation.
 
 If MORE-TARGET-LANGS is non-nil, translation will be applied
 recursively for all languages in MORE-TARGET-LANGS.  This allows,
@@ -240,8 +240,9 @@ translated to the other language and back.
 
 The translation is displayed in a separate buffer.  There it can
 be edited there and, if desired, the original text can be
-replaced with the (edited) translation using C-c C-c.  The
-translation can be dismissed via C-c C-k."
+replaced with the (edited) translation using
+\\<txl-edit-translation-mode-map> \\[txl-accept-translation].  The
+translation can be dismissed via \\[txl-dismiss-translation]."
   (interactive "P")
   (setq txl-source-buffer (current-buffer))
   (setq txl-original-window-configuration (current-window-configuration))
