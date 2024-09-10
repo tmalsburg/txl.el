@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t -*-
 ;;; txl.el --- Provides machine translation via DeepL's REST API
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
@@ -42,6 +43,7 @@
 ;;; Code:
 
 (require 'request)
+(require 'org)
 (require 'guess-language)
 
 (defconst txl-translation-buffer-name "*TXL translation result*"
@@ -97,10 +99,10 @@ Will be restored when the buffer for reviewing the translation is closed.")
            (const :tag "Chinese" ZH))))
 
 (defcustom txl-deepl-split-sentences 'nonewlines
-  "Whether the translation engine splits input into sentences which are translated individually."
+  "Whether to input into sentences which are translated individually."
   :type '(choice (const :tag "No splitting" nil)
                  (const :tag "Split on interpunction and on newlines" t)
-                 (const :tag "Split on interpunction only, ignoring newlines " 'nonewlines)))
+                 (const :tag "Split on interpunction only, ignoring newlines " nonewlines)))
 
 (defcustom txl-deepl-preserve-formatting t
   "Whether the translation engine should respect the original formatting.
@@ -117,9 +119,9 @@ Upper/lower case at the beginning of the sentence."
 This feature currently works for all target languages except
 EN (English), EN-GB (British English), EN-US (American English),
 ES (Spanish), JA (Japanese) and ZH (Chinese)."
-  :type '(choice (const :tag "Default" 'default)
-                 (const :tag "More formal language" 'more)
-                 (const :tag "Less formal language" 'less)))
+  :type '(choice (const :tag "Default" default)
+                 (const :tag "More formal language" more)
+                 (const :tag "Less formal language" less)))
 
 (defcustom txl-deepl-api-key ""
   "The authentication key used to access the translation API."
@@ -155,7 +157,7 @@ go."
               (translation (cdr (assoc 'text (aref translations 0))))
               (translation (decode-coding-string (encode-coding-string translation 'latin-1) 'utf-8)))
          (if more-target-langs
-             (apply 'txl-translate-string translation (car more-target-langs) (cdr more-target-langs))
+             (apply #'txl-translate-string translation (car more-target-langs) (cdr more-target-langs))
            translation)))
       (400 (error "Bad request.  Please check error message and your parameters"))
       (403 (error "Authorization failed.  Please supply a valid auth_key parameter"))
@@ -203,7 +205,7 @@ recursively for all languages in MORE-TARGET-LANGS.  This allows,
 for example, to translate to another language and back in one
 go."
   (let ((text (buffer-substring-no-properties (txl-beginning) (txl-end))))
-    (apply 'txl-translate-string text target-lang more-target-langs)))
+    (apply #'txl-translate-string text target-lang more-target-langs)))
 
 (defun txl-guess-language ()
   "Guess the language of the region or paragraph."
@@ -231,11 +233,11 @@ written, i.e. the target language of a translation."
     (insert string)))
 
 ;;;###autoload
-(defun txl-translate-region-or-paragraph (&optional prefix-arg)
+(defun txl-translate-region-or-paragraph (&optional roundtrip)
   "Translate the region or paragraph and display result in a separate buffer.
 
 By default the text is translated to the other language specified
-in `txl-languages'.  If PREFIX-ARG is non-nil, the text is
+in `txl-languages'.  If ROUNDTRIP is non-nil, the text is
 translated to the other language and back.
 
 The translation is displayed in a separate buffer.  There it can
@@ -246,10 +248,10 @@ translation can be dismissed via \\[txl-dismiss-translation]."
   (interactive "P")
   (setq txl-source-buffer (current-buffer))
   (setq txl-original-window-configuration (current-window-configuration))
-  (let* ((route (if prefix-arg
+  (let* ((route (if roundtrip
                     (list (txl-other-language) (txl-guess-language))
                   (list (txl-other-language))))
-         (translation (apply 'txl-translate route)))
+         (translation (apply #'txl-translate route)))
     (with-current-buffer (get-buffer-create txl-translation-buffer-name)
       (unless (derived-mode-p 'text-mode)
         (text-mode))
