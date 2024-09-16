@@ -1,5 +1,4 @@
-;; -*- lexical-binding: t -*-
-;;; txl.el --- Provides machine translation via DeepL's REST API
+;;; txl.el --- Provides machine translation via DeepL's REST API -*- lexical-binding: t -*-
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
