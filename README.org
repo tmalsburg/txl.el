@@ -15,7 +15,7 @@ Dependencies are:
 - [[https://github.com/tkf/emacs-request][request.el]] (available on [[https://melpa.org/#/request][MELPA]])
 
 ** Configuration
-Minimally the user needs to specify a pair of languages in the customization variable ~txl-languages~ and an authentication key for DeepL's REST API via ~txl-deepl-api-url~.  (You need the [[https://www.deepl.com/pro?cta=menu-plans/][“developer” subscription]].)  Example:
+Minimally, the user needs to specify a pair of languages in the customization variable ~txl-languages~ and an authentication key for DeepL's REST API via ~txl-deepl-api-url~.  (You need the [[https://www.deepl.com/pro?cta=menu-plans/][“developer” subscription]].)  Example:
 
 #+BEGIN_SRC elisp
 (require 'txl)
@@ -23,7 +23,7 @@ Minimally the user needs to specify a pair of languages in the customization var
 (setq txl-deepl-api-key "my-api-key")
 #+END_SRC
 
-By the default, txl.el assumes that your key is for the DeepL Pro plan.  When the free plan is used instead, a txl.el needs to use a different API URL.  The following definition sets this URL:
+By default, txl.el assumes that your key is for the DeepL Pro plan.  When the free plan is used instead, txl.el needs to use a different API URL.  The following definition sets this URL:
 
 #+BEGIN_SRC elisp
 (setq txl-deepl-api-url "https://api-free.deepl.com/v2/translate")
