@@ -3,9 +3,7 @@
 TXL provides machine translation through DeepL's REST API.
 
 ** Installation
-TXL is not yet available on MELPA or similar repositories.  The file [[https://github.com/tmalsburg/txl.el/blob/master/txl.el][txl.el]] must therefore be downloaded and installed manually in a directory where Emacs will find it.
-
-If you’re using [[https://github.com/raxod502/straight.el][straight.el]] as your package manager you can install txl using:
+TXL is available on [[https://melpa.org/#/txl][MELPA]].  If you’re using [[https://github.com/raxod502/straight.el][straight.el]] as your package manager, you can also install directly from this repo using:
 
 #+BEGIN_SRC elisp
 (straight-use-package
