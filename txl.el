@@ -120,7 +120,9 @@ EN (English), EN-GB (British English), EN-US (American English),
 ES (Spanish), JA (Japanese) and ZH (Chinese)."
   :type '(choice (const :tag "Default" default)
                  (const :tag "More formal language" more)
-                 (const :tag "Less formal language" less)))
+                 (const :tag "Less formal language" less)
+                 (const :tag "More formal language if available, otherwise fallback to default" prefer_more)
+                 (const :tag "Less formal language if available, otherwise fallback to default" prefer_less)))
 
 (defcustom txl-deepl-api-key ""
   "The authentication key used to access the translation API."
