@@ -48,6 +48,9 @@
 (defconst txl-translation-buffer-name "*TXL translation result*"
   "Name of the buffer used for reviewing and editing proposed translations.")
 
+(defconst txl-error-buffer-name "*TXL Error*"
+  "Name of the buffer used to log errors reported during the translation.")
+
 (defvar txl-source-buffer nil
   "Buffer for which a translation was requested.")
 
@@ -204,14 +207,36 @@ go."
          (if more-target-langs
              (apply #'txl-translate-string translation (car more-target-langs) (cdr more-target-langs))
            translation)))
-      (400 (error "Bad request.  Please check error message and your parameters"))
+      (400
+       (let* ((data (request-response-data response))
+              (err (alist-get 'message data)))
+         (txl--log-and-bail-out "Bad Request" `(p1 ,text) `(p2 ,err))))
       (403 (error "Authorization failed.  Please supply a valid auth_key parameter"))
       (404 (error "The requested resource could not be found"))
       (413 (error "The request size exceeds the limit"))
       (429 (error "Too many requests.  Please wait and resend your request"))
       (456 (error "Quota exceeded.  The character limit has been reached"))
       (503 (error "Resource currently unavailable.  Try again later"))
-      (_   (error "Internal error")))))
+      (_
+       (let* ((err (request-response-error-thrown response)))
+         (txl--log-and-bail-out "Unknown error" `(p1 ,text) `(p2 ,err)))))))
+
+(defun txl--log-and-bail-out (err-msg &rest args)
+  (with-current-buffer (txl--get-log-buffer)
+    (let* ((inhibit-read-only t)
+           (text (car (alist-get 'p1 args)))
+           (err-response (car (alist-get 'p2 args))))
+      (erase-buffer)
+      (insert (format "Failed to translate text: %s\nError: %s" text err-response))))
+  (error (format "%s.  Logged in %s" err-msg txl-error-buffer-name)))
+
+(defun txl--get-log-buffer ()
+  "Fetch (and maybe create) the error log buffer."
+  (unless (get-buffer txl-error-buffer-name)
+    (with-current-buffer (get-buffer-create txl-error-buffer-name)
+      (view-mode)
+      (setq buffer-undo-list t)))
+  txl-error-buffer-name)
 
 (defun txl-beginning ()
   "Return beginning of region or, if inactive, paragraph."
